@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.User;
-import com.example.demo.profile.request.UserProfileRequest;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
@@ -18,7 +18,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<Iterable<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getUsers());
     }
 
@@ -27,21 +27,24 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    @GetMapping("/name")
+    public ResponseEntity<List<User>> getUsersByName(@RequestParam String name) {
+        return ResponseEntity.ok(userService.getUsersByName(name));
+    }
+
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
         return ResponseEntity.ok(userService.createUser(user));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updateUserById(@PathVariable("id") int id, @RequestBody UserProfileRequest userProfileRequest) {
-        userService.updateUserById(id, userProfileRequest);
-        return new ResponseEntity(HttpStatus.OK);
+    public ResponseEntity<User> updateUser(@PathVariable("id") int id, @RequestBody User user) {
+        return ResponseEntity.ok(userService.updateUserById(id, user));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteUserById(@PathVariable("id") int id) {
+    public ResponseEntity<HttpStatus> deleteUserById(@PathVariable("id") int id) {
         userService.deleteUserById(id);
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.accepted().build();
     }
-
 }

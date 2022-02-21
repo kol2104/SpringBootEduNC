@@ -1,55 +1,44 @@
 package com.example.demo.service;
 
+import com.example.demo.exceptions.UserNotFoundException;
 import com.example.demo.model.User;
-import com.example.demo.profile.request.UserProfileRequest;
+import com.example.demo.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
 
-    private final List<User> userList = new ArrayList<>(
-            Arrays.asList(
-                    new User(1, "Ivan", "Ivanov", "123456"),
-                    new User(2, "Sergey", "Sergeev", "987654"),
-                    new User(3, "Dmitry", "Dmitriev", "456123")
-            )
-    );
+    @Autowired
+    private UserRepository userRepository;
 
-    public List<User> getUsers() {
-        return userList;
+    public Iterable<User> getUsers() {
+        return userRepository.findAll();
     }
 
     public User getUserById(int id) {
-        return userList.stream().filter(user -> user.getId() == id).findFirst().get();
+        return userRepository.findById(id).get();
     }
 
     public User createUser(User newUser) {
-        User lastUser = userList.isEmpty() ? null : userList.get(userList.size() - 1);
-        if (lastUser != null) {
-            newUser.setId(lastUser.getId() + 1);
-        } else {
-            newUser.setId(1);
-        }
-        userList.add(newUser);
-        return newUser;
+        return userRepository.save(newUser);
     }
 
-    public void updateUserById(int id, UserProfileRequest userProfileRequest) {
-        User newUser = userList.stream().filter(user -> user.getId() == id).findFirst().get();
-        newUser.setName(userProfileRequest.getName());
-        newUser.setLastName(userProfileRequest.getLastName());
-        newUser.setMobile(userProfileRequest.getMobile());
+    public User updateUserById(int id, User user) {
+        userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        user.setId(id);
+        userRepository.updateUser(user.getId(), user.getName(), user.getLastName(), user.getMobile());
+        return user;
     }
 
     public void deleteUserById(int id) {
-        userList.remove(id - 1);
-        int num = 1;
-        for (User u : userList) {
-            u.setId(num++);
-        }
+        userRepository.deleteById(id);
+    }
+
+    public List<User> getUsersByName(String name) {
+        return userRepository.findByName(name);
     }
 }

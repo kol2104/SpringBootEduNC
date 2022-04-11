@@ -1,0 +1,36 @@
+version: '3.9'
+services:
+  user_service:
+    container_name: user-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: user-service:0.0.1
+    ports:
+      - "8085:8085"
+    env_file: .env
+    networks:
+      - user_network
+    depends_on:
+      - postgres
+
+  postgres:
+    container_name: postgres
+    image: postgres:14.2
+    ports:
+      - "5432:5432"
+    restart: always
+    env_file: .env
+    networks:
+      - user_network
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
+    driver: local
+
+networks:
+  user_network:
+    name: user_network
+    driver: bridge

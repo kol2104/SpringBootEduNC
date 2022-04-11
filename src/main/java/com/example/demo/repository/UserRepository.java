@@ -11,15 +11,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Repository
-public interface UserRepository extends CrudRepository<User, Integer> {
+public interface UserRepository extends CrudRepository<User, String> {
 
     List<User> findByName(String name);
 
-    @Transactional
     @Modifying
     @Query(value = "update user_data u set name=COALESCE(CAST(:name AS TEXT),u.name), " +
             "last_name=COALESCE(CAST(:lastName AS TEXT),u.last_name), mobile=COALESCE(CAST(:mobile AS TEXT),u.mobile) " +
             "where id=:id",
            nativeQuery = true)
-    void updateUser(@Param("id") int id, @Param("name") String name, @Param("lastName") String lastName, @Param("mobile") String mobile);
+    void updateUser(@Param("id") String id, @Param("name") String name,
+                    @Param("lastName") String lastName, @Param("mobile") String mobile);
 }
